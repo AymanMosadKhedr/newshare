@@ -29,8 +29,8 @@ import java.security.Principal;
 @CrossOrigin("http://localhost:8081/")
 public class UserController {
 
-@Autowired
-private JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
     @Autowired
     private UserService userService;
     @Autowired
@@ -39,16 +39,16 @@ private JwtTokenUtil jwtTokenUtil;
     private AuthenticationManager authenticationManager;
 
     @PostMapping("/registration")
-    public ResponseEntity<?> register(@RequestBody user user){
-    System.out.println(user.getToken());
-        if(userService.findByUsername(user.getUsername()) != null){
+    public ResponseEntity<?> register(@RequestBody user user) {
+        System.out.println(user.getToken());
+        if (userService.findByUsername(user.getUsername()) != null) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
         user.setRole(Role.USER);
         return new ResponseEntity<>(userService.saveUser(user), HttpStatus.CREATED);
     }
 
-    @PostMapping ("/login")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody JwtRequest authenticationRequest, HttpServletRequest request) throws Exception {
         System.out.println(authenticationRequest.getUsername());
         authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
@@ -62,6 +62,7 @@ private JwtTokenUtil jwtTokenUtil;
         //User user = userDetailsService.findByUsername(authenticationRequest.getUsername());
         return ResponseEntity.ok(new JwtResponse(token));
     }
+
     private void authenticate(String username, String password) throws Exception {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
@@ -73,32 +74,37 @@ private JwtTokenUtil jwtTokenUtil;
     }
 
 
+    @DeleteMapping("")
+    public void deleteByUsername() {
 
-@DeleteMapping("")
-public void deleteByUsername()  {
-
-Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-System.out.println(principal.toString());
-    userService.deleteByUsername(principal.toString());
-}
-
-
-    @RequestMapping(value = "/{id}",method = RequestMethod.PUT)
-    public ResponseEntity<?> Edit(@RequestBody user user,@PathVariable long id) {
-        return ResponseEntity.ok(userService.Update(user,id));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        user my_user = (user) authentication.getCredentials();
+        //System.out.println("test");
+        //System.out.println(my_user.toString());
+        userService.deleteByUsername(my_user.getUsername());
     }
-
 
 
 
 
 
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public ResponseEntity<?>findAll(){
+    public ResponseEntity<?> findAll() {
 
         return ResponseEntity.ok(userService.findAll());
 
 
     }
+
+
+
+
+
+    @RequestMapping(value = "",method = RequestMethod.PUT)
+    public ResponseEntity<?> Edit(@RequestBody user user) {
+        return ResponseEntity.ok(UserService.Update(user));
+    }
+
+
 
 }
